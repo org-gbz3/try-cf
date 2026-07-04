@@ -1,0 +1,40 @@
+{
+  "name": "Cloudflare Workers",
+  "build": {
+    "dockerfile": "Dockerfile",
+    "context": "."
+  },
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "anthropic.claude-code",
+        // Cloudflare Workers
+        "cloudflare.cloudflare-workers-bindings-extension",
+        // TypeScript / JavaScript
+        "ms-vscode.vscode-typescript-next",
+        "dbaeumer.vscode-eslint",
+        "esbenp.prettier-vscode",
+        // Git
+        "eamodio.gitlens",
+        // DX
+        "EditorConfig.EditorConfig",
+        "usernamehw.errorlens"
+      ],
+      "settings": {
+        "editor.formatOnSave": true,
+        "editor.defaultFormatter": "esbenp.prettier-vscode",
+        "[typescript]": {
+          "editor.defaultFormatter": "esbenp.prettier-vscode"
+        },
+        "[javascript]": {
+          "editor.defaultFormatter": "esbenp.prettier-vscode"
+        }
+      }
+    }
+  },
+  "remoteEnv": {
+    "CLOUDFLARE_API_TOKEN": "${localEnv:CLOUDFLARE_API_TOKEN}"
+  },
+  "postCreateCommand": "bash .devcontainer/scripts/postCreate.sh",
+  "remoteUser": "node"
+}
