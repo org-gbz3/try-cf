@@ -137,3 +137,10 @@ $
 $ cd my-dynamic-site/
 $ npm run deploy
 ```
+
+#### アクセス制限
+
+1. ダッシュボードで `Zero Trust` > `Access コントロール` > `アプリケーション`
+1. 新規アプリケーションを作成
+   > - 宛先: my-dynamic-site.<domain-name>
+   > - Accessポリシー: Emails
