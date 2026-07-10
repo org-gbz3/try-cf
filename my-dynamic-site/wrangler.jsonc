@@ -7,15 +7,19 @@
 	"name": "my-dynamic-site",
 	"main": "src/index.ts",
 	"compatibility_date": "2026-07-04",
-	"compatibility_flags": [
-		"nodejs_compat",
-		"global_fetch_strictly_public"
-	],
+	"compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
 	"r2_buckets": [
 		{
 			"binding": "PDF_BUCKET",
-			"bucket_name": "my-dynamic-site-pdfs"
-		}
+			"bucket_name": "my-dynamic-site-pdfs",
+		},
+	],
+	"d1_databases": [
+		{
+			"binding": "edge_blog_db",
+			"database_name": "edge-blog-db",
+			"database_id": "3e0f3498-d7fb-4dae-906a-39a4351760e9",
+		},
 	],
 	"observability": {
 		"enabled": true,
@@ -25,8 +29,8 @@
 	"routes": [
 		{
 			"pattern": "my-dynamic-site.iamgbz3.dev",
-			"custom_domain": true
-		}
+			"custom_domain": true,
+		},
 	],
 	/**
 	 * Smart Placement
