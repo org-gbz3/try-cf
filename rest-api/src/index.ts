@@ -9,7 +9,9 @@ import { waitUntil } from 'cloudflare:workers';
 async function saveCache(cache: KVNamespace, cacheKey: string, todo: typeof todosTable.$inferSelect) {
 	const execute = async () => {
 		const saveData = JSON.stringify(todo);
-		await cache.put(cacheKey, saveData);
+		await cache.put(cacheKey, saveData, {
+			expirationTtl: 60, // TTL (sec)
+		});
 	};
 
 	waitUntil(execute());
