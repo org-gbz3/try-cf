@@ -149,3 +149,15 @@ Use --remote if you want to access the remote instance.
 
 ✅ No migrations to apply!
 ```
+
+## 初期データの投入
+
+- `src/db/seed.ts` を作成
+
+```bash
+# データ投入
+npx tsx ./src/db/seed.ts
+
+# Drizzle Studio 起動（PORTS タブで 4983 -> localhost:4983 を追加）
+npx drizzle-kit studio
+```
