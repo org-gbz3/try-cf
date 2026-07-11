@@ -171,3 +171,34 @@ npx drizzle-kit studio
 ```bash
 npm install hono
 ```
+
+### POST
+
+事前に `Zod` をインストール
+
+```bash
+npm install zod @hono/zod-validator
+```
+
+### 動作確認
+
+```bash
+# Todo 一覧
+curl http://localhost:8787/api/todos |jq .
+
+# Todo 1件
+curl -i http://localhost:8787/api/todos/1
+
+# 登録
+curl -i -X POST http://localhost:8787/api/todos \
+  -H "Content-Type: application/json" \
+  -d '{"title": "牛乳を買う", "description": "スーパーで低脂肪乳"}'
+
+# 更新
+curl -i -X PUT http://localhost:8787/api/todos/5 \
+  -H "Content-Type: application/json" \
+  -d '{"title": "乳牛を買う", "description": "スーパーにて"}'
+
+# 削除
+curl -i -X DELETE http://localhost:8787/api/todos/5
+```
