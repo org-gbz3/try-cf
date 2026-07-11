@@ -1,0 +1,34 @@
+{
+	"name": "rest-api",
+	"version": "0.0.0",
+	"private": true,
+	"scripts": {
+		"db:migrate": "drizzle-kit generate",
+		"db:migrate:apply": "wrangler d1 migrations apply todo-api-db",
+		"db:migrate:apply:remote": "wrangler d1 migrations apply todo-api-db --remote",
+		"db:studio": "drizzle-kit studio",
+		"db:seed": "tsx ./src/db/seed.ts",
+		"deploy": "wrangler deploy",
+		"dev": "wrangler dev",
+		"start": "wrangler dev",
+		"test": "vitest",
+		"cf-typegen": "wrangler types"
+	},
+	"devDependencies": {
+		"@cloudflare/vitest-pool-workers": "^0.18.4",
+		"@libsql/client": "^0.17.4",
+		"@types/node": "^26.1.1",
+		"drizzle-kit": "^0.31.10",
+		"tsx": "^4.23.0",
+		"typescript": "^5.5.2",
+		"vitest": "^4.1.0",
+		"wrangler": "^4.110.0"
+	},
+	"dependencies": {
+		"@hono/zod-validator": "^0.8.0",
+		"dotenv": "^17.4.2",
+		"drizzle-orm": "^0.45.2",
+		"hono": "^4.12.29",
+		"zod": "^4.4.3"
+	}
+}
