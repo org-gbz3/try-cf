@@ -161,3 +161,13 @@ npx tsx ./src/db/seed.ts
 # Drizzle Studio 起動（PORTS タブで 4983 -> localhost:4983 を追加）
 npx drizzle-kit studio
 ```
+
+## CRUD 操作の実装
+
+### GET
+
+事前に `Hono` をインストール
+
+```bash
+npm install hono
+```
