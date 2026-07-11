@@ -1,5 +1,7 @@
 # try-cf
 
+- [REST API の実装](README_rest-api.md)
+
 ## workers
 
 - [Get Started](https://developers.cloudflare.com/workers/static-assets/get-started/)
