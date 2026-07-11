@@ -4,9 +4,20 @@ import { eq } from 'drizzle-orm';
 import { todosTable } from './db/schema';
 import { zValidator } from '@hono/zod-validator';
 import * as z from 'zod/mini';
-import { title } from 'node:process';
-import { success } from 'zod';
-import { todo } from 'node:test';
+import { waitUntil } from 'cloudflare:workers';
+
+async function saveCache(cache: KVNamespace, cacheKey: string, todo: typeof todosTable.$inferSelect) {
+	const execute = async () => {
+		const saveData = JSON.stringify(todo);
+		await cache.put(cacheKey, saveData);
+	};
+
+	waitUntil(execute());
+}
+
+async function deleteCache(cache: KVNamespace, cacheKey: string) {
+	waitUntil(cache.delete(cacheKey));
+}
 
 const app = new Hono<{ Bindings: Env }>();
 
@@ -27,6 +38,14 @@ app.get('/api/todos', async (c) => {
 
 // 特定の Todo を取得
 app.get('/api/todos/:id', async (c) => {
+	const cache = c.env.RESPONSE_CACHE;
+	const cacheKey = c.req.path;
+	const cachedData = await cache.get(cacheKey);
+	if (cachedData) {
+		console.log(`Cache hit: ${cachedData}`);
+		return c.json({ success: true, data: cachedData });
+	}
+
 	const id = c.req.param('id');
 	const db = drizzle(c.env.DB);
 
@@ -40,6 +59,8 @@ app.get('/api/todos/:id', async (c) => {
 		if (!todo) {
 			return c.json({ success: false, error: 'Todo not found' }, 404);
 		}
+
+		saveCache(cache, cacheKey, todo);
 
 		return c.json({ success: true, data: todo });
 	} catch (error) {
@@ -116,6 +137,7 @@ app.put(
 			}
 
 			const updatedTodo = await db.update(todosTable).set(json).where(eq(todosTable.id, id)).returning();
+			saveCache(c.env.RESPONSE_CACHE, c.req.path, updatedTodo[0]);
 
 			return c.json({ success: true, data: updatedTodo[0] });
 		} catch (error) {
@@ -147,6 +169,7 @@ app.delete(
 				return c.json({ success: false, error: 'Todo not found' }, 404);
 			}
 
+			deleteCache(c.env.RESPONSE_CACHE, c.req.path);
 			return c.json({ success: true, message: 'Todo deleted successfully', data: deletedTodo[0] });
 		} catch (error) {
 			return c.json({ success: false, error: 'Failed to delete todo' }, 500);
