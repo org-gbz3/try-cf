@@ -1,0 +1,18 @@
+type Article {
+	id: ID!
+	title: String!
+	content: String!
+	author: String!
+	publishedAt: DateTime
+	imageUrl: String
+	tags: [String!]!
+	isPublished: Boolean!
+	createdAt: DateTime!
+	updatedAt: DateTime!
+}
+
+extend type Query {
+	articles(limit: Int = 10, offset: Int = 0, published: Boolean): [Article!]!
+
+	article(id: ID!): Article
+}

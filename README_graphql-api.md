@@ -173,3 +173,11 @@ npx graphql-codegen
 code src/index.ts
 npm run dev  # http://localhost:8787/graphql で GraphQL 開発用 IDE が表示される
 ```
+
+## GraphQL Query の実装
+
+```bash
+mkdir -p src/schema/articles
+code src/schema/articles/schema.graphql
+npx graphql-codegen
+```

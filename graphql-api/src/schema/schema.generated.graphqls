@@ -1,5 +1,20 @@
+type Article {
+  author: String!
+  content: String!
+  createdAt: DateTime!
+  id: ID!
+  imageUrl: String
+  isPublished: Boolean!
+  publishedAt: DateTime
+  tags: [String!]!
+  title: String!
+  updatedAt: DateTime!
+}
+
 scalar DateTime
 
 type Query {
+  article(id: ID!): Article
+  articles(limit: Int = 10, offset: Int = 0, published: Boolean): [Article!]!
   hello: String!
 }
