@@ -6,15 +6,55 @@ import { zValidator } from '@hono/zod-validator';
 import * as z from 'zod/mini';
 import { waitUntil } from 'cloudflare:workers';
 
+const STALE_WHILE_REVALIDATE = 60;
+
+type CacheData = {
+	staleWhileRevalidate: number;
+	data: typeof todosTable.$inferSelect;
+};
+
 async function saveCache(cache: KVNamespace, cacheKey: string, todo: typeof todosTable.$inferSelect) {
 	const execute = async () => {
-		const saveData = JSON.stringify(todo);
-		await cache.put(cacheKey, saveData, {
-			expirationTtl: 60, // TTL (sec)
+		const staleWhileRevalidateTime = new Date();
+		staleWhileRevalidateTime.setSeconds(staleWhileRevalidateTime.getSeconds() + STALE_WHILE_REVALIDATE);
+		const saveData: CacheData = {
+			staleWhileRevalidate: staleWhileRevalidateTime.getTime(),
+			data: todo,
+		};
+		await cache.put(cacheKey, JSON.stringify(saveData), {
+			expirationTtl: 60 * 5, // TTL (sec)
 		});
 	};
 
 	waitUntil(execute());
+}
+
+async function getCache(
+	cache: KVNamespace,
+	cacheKey: string,
+	saveDataFunction: () => Promise<typeof todosTable.$inferSelect | undefined>,
+): Promise<typeof todosTable.$inferSelect | undefined> {
+	const cachedData = await cache.get<CacheData>(cacheKey, 'json');
+
+	if (cachedData) {
+		console.log(`Cache hit: ${JSON.stringify(cachedData)}`);
+		if (cachedData.staleWhileRevalidate < Date.now()) {
+			// 古いキャッシュを応答し、裏でキャッシュを更新する
+			waitUntil(
+				(async () => {
+					const saveData = await saveDataFunction();
+					if (saveData) saveCache(cache, cacheKey, saveData);
+				})(),
+			);
+		}
+
+		return cachedData.data;
+	}
+
+	const freshData = await saveDataFunction();
+	if (freshData) saveCache(cache, cacheKey, freshData);
+
+	return freshData;
 }
 
 async function deleteCache(cache: KVNamespace, cacheKey: string) {
@@ -42,27 +82,22 @@ app.get('/api/todos', async (c) => {
 app.get('/api/todos/:id', async (c) => {
 	const cache = c.env.RESPONSE_CACHE;
 	const cacheKey = c.req.path;
-	const cachedData = await cache.get(cacheKey);
-	if (cachedData) {
-		console.log(`Cache hit: ${cachedData}`);
-		return c.json({ success: true, data: cachedData });
-	}
 
 	const id = c.req.param('id');
 	const db = drizzle(c.env.DB);
 
 	try {
-		const todo = await db
-			.select()
-			.from(todosTable)
-			.where(eq(todosTable.id, Number(id)))
-			.get();
+		const todo = await getCache(cache, cacheKey, async () => {
+			return await db
+				.select()
+				.from(todosTable)
+				.where(eq(todosTable.id, Number(id)))
+				.get();
+		});
 
 		if (!todo) {
 			return c.json({ success: false, error: 'Todo not found' }, 404);
 		}
-
-		saveCache(cache, cacheKey, todo);
 
 		return c.json({ success: true, data: todo });
 	} catch (error) {
