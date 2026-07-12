@@ -26,6 +26,38 @@ export type Article = {
   updatedAt: Scalars['DateTime']['output'];
 };
 
+export type CreateArticleInput = {
+  author: Scalars['String']['input'];
+  content: Scalars['String']['input'];
+  imageUrl?: InputMaybe<Scalars['String']['input']>;
+  isPublished?: InputMaybe<Scalars['Boolean']['input']>;
+  tags?: InputMaybe<Array<Scalars['String']['input']>>;
+  title: Scalars['String']['input'];
+};
+
+export type Mutation = {
+  __typename?: 'Mutation';
+  createArticle: Article;
+  deleteArticle: Scalars['Boolean']['output'];
+  updateArticle: Article;
+};
+
+
+export type MutationcreateArticleArgs = {
+  input: CreateArticleInput;
+};
+
+
+export type MutationdeleteArticleArgs = {
+  id: Scalars['ID']['input'];
+};
+
+
+export type MutationupdateArticleArgs = {
+  id: Scalars['ID']['input'];
+  input: UpdateArticleInput;
+};
+
 export type Query = {
   __typename?: 'Query';
   article?: Maybe<Article>;
@@ -43,6 +75,14 @@ export type QueryarticlesArgs = {
   limit?: InputMaybe<Scalars['Int']['input']>;
   offset?: InputMaybe<Scalars['Int']['input']>;
   published?: InputMaybe<Scalars['Boolean']['input']>;
+};
+
+export type UpdateArticleInput = {
+  content: Scalars['String']['input'];
+  imageUrl?: InputMaybe<Scalars['String']['input']>;
+  isPublished?: InputMaybe<Scalars['Boolean']['input']>;
+  tags?: InputMaybe<Array<Scalars['String']['input']>>;
+  title: Scalars['String']['input'];
 };
 
 
@@ -122,9 +162,12 @@ export type ResolversTypes = {
   String: ResolverTypeWrapper<Scalars['String']['output']>;
   ID: ResolverTypeWrapper<Scalars['ID']['output']>;
   Boolean: ResolverTypeWrapper<Scalars['Boolean']['output']>;
+  CreateArticleInput: CreateArticleInput;
   DateTime: ResolverTypeWrapper<Scalars['DateTime']['output']>;
+  Mutation: ResolverTypeWrapper<Record<PropertyKey, never>>;
   Query: ResolverTypeWrapper<Record<PropertyKey, never>>;
   Int: ResolverTypeWrapper<Scalars['Int']['output']>;
+  UpdateArticleInput: UpdateArticleInput;
 };
 
 /** Mapping between all available schema types and the resolvers parents */
@@ -133,9 +176,12 @@ export type ResolversParentTypes = {
   String: Scalars['String']['output'];
   ID: Scalars['ID']['output'];
   Boolean: Scalars['Boolean']['output'];
+  CreateArticleInput: CreateArticleInput;
   DateTime: Scalars['DateTime']['output'];
+  Mutation: Record<PropertyKey, never>;
   Query: Record<PropertyKey, never>;
   Int: Scalars['Int']['output'];
+  UpdateArticleInput: UpdateArticleInput;
 };
 
 export type ArticleResolvers<ContextType = any, ParentType extends ResolversParentTypes['Article'] = ResolversParentTypes['Article']> = {
@@ -155,6 +201,12 @@ export interface DateTimeScalarConfig extends GraphQLScalarTypeConfig<ResolversT
   name: 'DateTime';
 }
 
+export type MutationResolvers<ContextType = any, ParentType extends ResolversParentTypes['Mutation'] = ResolversParentTypes['Mutation']> = {
+  createArticle?: Resolver<ResolversTypes['Article'], ParentType, ContextType, RequireFields<MutationcreateArticleArgs, 'input'>>;
+  deleteArticle?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType, RequireFields<MutationdeleteArticleArgs, 'id'>>;
+  updateArticle?: Resolver<ResolversTypes['Article'], ParentType, ContextType, RequireFields<MutationupdateArticleArgs, 'id' | 'input'>>;
+};
+
 export type QueryResolvers<ContextType = any, ParentType extends ResolversParentTypes['Query'] = ResolversParentTypes['Query']> = {
   article?: Resolver<Maybe<ResolversTypes['Article']>, ParentType, ContextType, RequireFields<QueryarticleArgs, 'id'>>;
   articles?: Resolver<Array<ResolversTypes['Article']>, ParentType, ContextType, RequireFields<QueryarticlesArgs, 'limit' | 'offset'>>;
@@ -164,6 +216,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
 export type Resolvers<ContextType = any> = {
   Article?: ArticleResolvers<ContextType>;
   DateTime?: GraphQLScalarType;
+  Mutation?: MutationResolvers<ContextType>;
   Query?: QueryResolvers<ContextType>;
 };
 

@@ -16,3 +16,26 @@ extend type Query {
 
 	article(id: ID!): Article
 }
+
+extend type Mutation {
+	createArticle(input: CreateArticleInput!): Article!
+	updateArticle(id: ID!, input: UpdateArticleInput!): Article!
+	deleteArticle(id: ID!): Boolean!
+}
+
+input CreateArticleInput {
+	title: String!
+	content: String!
+	author: String!
+	imageUrl: String
+	tags: [String!] = []
+	isPublished: Boolean = false
+}
+
+input UpdateArticleInput {
+	title: String!
+	content: String!
+	imageUrl: String
+	tags: [String!] = []
+	isPublished: Boolean = false
+}
