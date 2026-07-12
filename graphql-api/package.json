@@ -1,0 +1,27 @@
+{
+	"name": "graphql-api",
+	"version": "0.0.0",
+	"private": true,
+	"scripts": {
+		"deploy": "wrangler deploy",
+		"dev": "dotenv -e .env.development -- wrangler dev",
+		"db:migrate:dev": "dotenv -e .env.development -- drizzle-kit migrate",
+		"db:migrate:prod": "drizzle-kit migrate",
+		"test": "vitest",
+		"cf-typegen": "wrangler types"
+	},
+	"devDependencies": {
+		"@cloudflare/vitest-pool-workers": "^0.18.4",
+		"@types/node": "^26.1.1",
+		"dotenv-cli": "^11.0.0",
+		"drizzle-kit": "^0.31.10",
+		"typescript": "^5.5.2",
+		"vitest": "^4.1.0",
+		"wrangler": "^4.110.0"
+	},
+	"dependencies": {
+		"dotenv": "^17.4.2",
+		"drizzle-orm": "^0.45.2",
+		"postgres": "^3.4.9"
+	}
+}
