@@ -143,3 +143,33 @@ npm run db:migrate:dev
 2. `npx drizzle-kit generate` でマイグレーションファイルを生成
 3. `npm run db:migrate:dev` で開発環境（local）に適用
 4. 本番適用時は `npm run db:migrate:prod`（`.env.development` を経由しないため、環境変数 `DATABASE_URL` に本番接続文字列が必要）
+
+## GraphQL 関連ライブラリインストール
+
+```bash
+npm install graphql-yoga graphql graphql-scalars
+npm install -D @graphql-codegen/cli @eddeee888/gcg-typescript-resolver-files
+```
+
+## スキーマの初期サンプル作成
+
+```bash
+mkdir -p src/schema/base
+code src/schema/base/schema.graphql
+mkdir -p src/schema/hello
+code src/schema/hello/schema.graphql
+```
+
+## GraphQL Code Generator 用のコンフィグファイル作成
+
+```bash
+code codegen.ts
+npx graphql-codegen
+```
+
+## エントリーポイント実装
+
+```bash
+code src/index.ts
+npm run dev  # http://localhost:8787/graphql で GraphQL 開発用 IDE が表示される
+```
