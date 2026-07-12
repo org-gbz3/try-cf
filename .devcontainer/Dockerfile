@@ -15,5 +15,5 @@ RUN npm config set cafile /etc/ssl/certs/ca-certificates.crt --global
 
 # 開発用ユーティリティ
 RUN apt-get update \
-    && apt-get install -y --no-install-recommends ripgrep \
+    && apt-get install -y --no-install-recommends ripgrep postgresql-client \
     && rm -rf /var/lib/apt/lists/*

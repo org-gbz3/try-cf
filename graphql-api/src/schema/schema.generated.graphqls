@@ -1,0 +1,43 @@
+type Article {
+  author: String!
+  content: String!
+  createdAt: DateTime!
+  id: ID!
+  imageUrl: String
+  isPublished: Boolean!
+  publishedAt: DateTime
+  tags: [String!]!
+  title: String!
+  updatedAt: DateTime!
+}
+
+input CreateArticleInput {
+  author: String!
+  content: String!
+  imageUrl: String
+  isPublished: Boolean = false
+  tags: [String!] = []
+  title: String!
+}
+
+scalar DateTime
+
+type Mutation {
+  createArticle(input: CreateArticleInput!): Article!
+  deleteArticle(id: ID!): Boolean!
+  updateArticle(id: ID!, input: UpdateArticleInput!): Article!
+}
+
+type Query {
+  article(id: ID!): Article
+  articles(limit: Int = 10, offset: Int = 0, published: Boolean): [Article!]!
+  hello: String!
+}
+
+input UpdateArticleInput {
+  content: String!
+  imageUrl: String
+  isPublished: Boolean = false
+  tags: [String!] = []
+  title: String!
+}

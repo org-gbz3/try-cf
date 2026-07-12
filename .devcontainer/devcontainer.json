@@ -1,9 +1,9 @@
 {
   "name": "Cloudflare Workers",
-  "build": {
-    "dockerfile": "Dockerfile",
-    "context": "."
-  },
+  "dockerComposeFile": "docker-compose.yml",
+  "service": "app",
+  "workspaceFolder": "/workspaces/try-cf",
+  "shutdownAction": "stopCompose",
   "customizations": {
     "vscode": {
       "extensions": [
