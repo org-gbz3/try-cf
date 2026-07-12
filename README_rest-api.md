@@ -202,3 +202,10 @@ curl -i -X PUT http://localhost:8787/api/todos/5 \
 # 削除
 curl -i -X DELETE http://localhost:8787/api/todos/5
 ```
+
+## KV の作成と設定
+
+```bash
+npx wrangler kv namespace create "RESPONSE_CACHE"
+npx wrangler types
+```

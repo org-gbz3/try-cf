@@ -4,9 +4,62 @@ import { eq } from 'drizzle-orm';
 import { todosTable } from './db/schema';
 import { zValidator } from '@hono/zod-validator';
 import * as z from 'zod/mini';
-import { title } from 'node:process';
-import { success } from 'zod';
-import { todo } from 'node:test';
+import { waitUntil } from 'cloudflare:workers';
+
+const STALE_WHILE_REVALIDATE = 60;
+
+type CacheData = {
+	staleWhileRevalidate: number;
+	data: typeof todosTable.$inferSelect;
+};
+
+async function saveCache(cache: KVNamespace, cacheKey: string, todo: typeof todosTable.$inferSelect) {
+	const execute = async () => {
+		const staleWhileRevalidateTime = new Date();
+		staleWhileRevalidateTime.setSeconds(staleWhileRevalidateTime.getSeconds() + STALE_WHILE_REVALIDATE);
+		const saveData: CacheData = {
+			staleWhileRevalidate: staleWhileRevalidateTime.getTime(),
+			data: todo,
+		};
+		await cache.put(cacheKey, JSON.stringify(saveData), {
+			expirationTtl: 60 * 5, // TTL (sec)
+		});
+	};
+
+	waitUntil(execute());
+}
+
+async function getCache(
+	cache: KVNamespace,
+	cacheKey: string,
+	saveDataFunction: () => Promise<typeof todosTable.$inferSelect | undefined>,
+): Promise<typeof todosTable.$inferSelect | undefined> {
+	const cachedData = await cache.get<CacheData>(cacheKey, 'json');
+
+	if (cachedData) {
+		console.log(`Cache hit: ${JSON.stringify(cachedData)}`);
+		if (cachedData.staleWhileRevalidate < Date.now()) {
+			// 古いキャッシュを応答し、裏でキャッシュを更新する
+			waitUntil(
+				(async () => {
+					const saveData = await saveDataFunction();
+					if (saveData) saveCache(cache, cacheKey, saveData);
+				})(),
+			);
+		}
+
+		return cachedData.data;
+	}
+
+	const freshData = await saveDataFunction();
+	if (freshData) saveCache(cache, cacheKey, freshData);
+
+	return freshData;
+}
+
+async function deleteCache(cache: KVNamespace, cacheKey: string) {
+	waitUntil(cache.delete(cacheKey));
+}
 
 const app = new Hono<{ Bindings: Env }>();
 
@@ -27,15 +80,20 @@ app.get('/api/todos', async (c) => {
 
 // 特定の Todo を取得
 app.get('/api/todos/:id', async (c) => {
+	const cache = c.env.RESPONSE_CACHE;
+	const cacheKey = c.req.path;
+
 	const id = c.req.param('id');
 	const db = drizzle(c.env.DB);
 
 	try {
-		const todo = await db
-			.select()
-			.from(todosTable)
-			.where(eq(todosTable.id, Number(id)))
-			.get();
+		const todo = await getCache(cache, cacheKey, async () => {
+			return await db
+				.select()
+				.from(todosTable)
+				.where(eq(todosTable.id, Number(id)))
+				.get();
+		});
 
 		if (!todo) {
 			return c.json({ success: false, error: 'Todo not found' }, 404);
@@ -116,6 +174,7 @@ app.put(
 			}
 
 			const updatedTodo = await db.update(todosTable).set(json).where(eq(todosTable.id, id)).returning();
+			saveCache(c.env.RESPONSE_CACHE, c.req.path, updatedTodo[0]);
 
 			return c.json({ success: true, data: updatedTodo[0] });
 		} catch (error) {
@@ -147,6 +206,7 @@ app.delete(
 				return c.json({ success: false, error: 'Todo not found' }, 404);
 			}
 
+			deleteCache(c.env.RESPONSE_CACHE, c.req.path);
 			return c.json({ success: true, message: 'Todo deleted successfully', data: deletedTodo[0] });
 		} catch (error) {
 			return c.json({ success: false, error: 'Failed to delete todo' }, 500);
