@@ -19,6 +19,7 @@
 import { createYoga, createSchema } from 'graphql-yoga';
 import { typeDefs } from './schema/typeDefs.generated';
 import { resolvers } from './schema/resolvers.generated';
+import { createContext } from './context';
 
 const yoga = createYoga({
 	schema: createSchema({ typeDefs, resolvers }),
@@ -26,6 +27,6 @@ const yoga = createYoga({
 
 export default {
 	async fetch(request, env, ctx): Promise<Response> {
-		return yoga.fetch(request, ctx);
+		return createContext(env, () => yoga.fetch(request));
 	},
 } satisfies ExportedHandler<Env>;
